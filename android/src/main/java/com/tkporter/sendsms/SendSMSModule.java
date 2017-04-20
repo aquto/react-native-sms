@@ -12,11 +12,12 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 
 public class SendSMSModule extends ReactContextBaseJavaModule implements ActivityEventListener {
 
     private final ReactApplicationContext reactContext;
-    private Callback callback = null;
+    private Promise promise = null;
     private static final int REQUEST_CODE = 5235;
 
     public SendSMSModule(ReactApplicationContext reactContext) {
@@ -46,16 +47,21 @@ public class SendSMSModule extends ReactContextBaseJavaModule implements Activit
     }
 
     public void sendCallback(Boolean completed, Boolean cancelled, Boolean error) {
-        if (callback != null) {
-            callback.invoke(completed, cancelled, error);
-            callback = null;
+        if (promise != null) {
+            if (completed) {
+              promise.resolve(true);
+            }
+            else {
+              promise.reject("error");
+            }
+            promise = null;
         }
     }
 
     @ReactMethod
-    public void send(ReadableMap options, final Callback callback) {
+    public void send(ReadableMap options, final Promise promise) {
         try {
-            this.callback = callback;
+            this.promise = promise;
             new SendSMSObserver(reactContext, this, options).start();
 
             String body = options.hasKey("body") ? options.getString("body") : "";

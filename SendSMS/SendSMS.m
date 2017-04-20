@@ -17,9 +17,12 @@
 
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_METHOD(send:(NSDictionary *)options :(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(send:(NSDictionary *)options
+                 resolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject)
 {
-    _callback = callback;
+    _resolve = resolve;
+    _reject = reject;
     MFMessageComposeViewController *messageController = [[MFMessageComposeViewController alloc] init];
     if([MFMessageComposeViewController canSendText])
     {
@@ -43,25 +46,22 @@ RCT_EXPORT_METHOD(send:(NSDictionary *)options :(RCTResponseSenderBlock)callback
         [currentViewController presentViewController:messageController animated:YES completion:nil];
     } else {
         bool completed = NO, cancelled = NO, error = YES;
-        _callback(@[@(completed), @(cancelled), @(error)]);
+        _reject(@(completed), @(cancelled), @(error));
     }
 }
 
 -(void) messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result {
-    bool completed = NO, cancelled = NO, error = NO;
     switch (result) {
         case MessageComposeResultSent:
-            completed = YES;
+            _resolve(@YES);
             break;
         case MessageComposeResultCancelled:
-            cancelled = YES;
+            _reject(@"cancelled", @"cancelled", nil);
             break;
         default:
-            error = YES;
+            _reject(@"error", @"error", nil);
             break;
     }
-    
-    _callback(@[@(completed), @(cancelled), @(error)]);
 
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
