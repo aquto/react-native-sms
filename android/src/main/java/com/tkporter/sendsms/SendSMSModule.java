@@ -103,7 +103,7 @@ public class SendSMSModule extends ReactContextBaseJavaModule implements Activit
         } catch (Exception e) {
             //error!
             sendCallback(false, false, true);
-            throw e;
+            // throw e;
         }
     }
 
