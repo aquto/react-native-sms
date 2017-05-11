@@ -45,8 +45,7 @@ RCT_EXPORT_METHOD(send:(NSDictionary *)options
         }
         [currentViewController presentViewController:messageController animated:YES completion:nil];
     } else {
-        bool completed = NO, cancelled = NO, error = YES;
-        _reject(@(completed), @(cancelled), @(error));
+        _reject(@"error", @"error", nil);
     }
 }
 
